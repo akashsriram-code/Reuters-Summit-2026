@@ -7,6 +7,7 @@ export type Guest = {
   company: string;
   date: string;
   time: string;
+  endTime: string;
   status: GuestStatus;
   notes: string;
   createdAt: Date | null;
@@ -18,6 +19,7 @@ export type GuestFormValues = {
   company: string;
   date: string;
   time: string;
+  endTime: string;
   status: GuestStatus;
   notes: string;
 };
@@ -28,6 +30,8 @@ export type EditorSessionState = {
 
 export const SUMMIT_START_DATE = "2026-05-18";
 export const SUMMIT_END_DATE = "2026-05-23";
+export const SUMMIT_DAY_START_TIME = "09:00";
+export const SUMMIT_DAY_END_TIME = "19:00";
 
 export const SUMMIT_DATES = [
   "2026-05-18",

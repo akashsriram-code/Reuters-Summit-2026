@@ -6,6 +6,7 @@ import {
   query,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { getDefaultEndTime } from "@/lib/utils";
 import type { Guest, GuestFormValues, GuestStatus } from "@/lib/types";
 
 const COLLECTION_NAME = "guests";
@@ -15,6 +16,7 @@ type FirestoreGuest = {
   company: string;
   date: string;
   time: string;
+  endTime?: string;
   status: GuestStatus;
   notes?: string;
   createdAt?: Timestamp;
@@ -36,6 +38,7 @@ function mapGuest(documentId: string, data: FirestoreGuest): Guest {
     company: data.company,
     date: data.date,
     time: data.time,
+    endTime: data.endTime ?? getDefaultEndTime(data.time),
     status: data.status,
     notes: data.notes ?? "",
     createdAt: data.createdAt?.toDate() ?? null,

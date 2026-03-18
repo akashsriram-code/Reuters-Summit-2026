@@ -11,6 +11,8 @@ import UnlockModal from "@/app/components/UnlockModal";
 import { getEditorSessionState, lockEditing, unlockEditing } from "@/lib/editorSession";
 import { addGuest, deleteGuest, subscribeToGuests, updateGuest } from "@/lib/guestService";
 import { isFirebaseConfigured } from "@/lib/firebase";
+import { SUMMIT_DAY_END_TIME } from "@/lib/types";
+import { addMinutesToTime, timeToMinutes } from "@/lib/utils";
 import type { DashboardTab, Guest, GuestFormValues } from "@/lib/types";
 
 type ModalState =
@@ -158,6 +160,32 @@ export default function Home() {
     }
   };
 
+  const handleMoveGuest = async (guest: Guest, date: string, time: string) => {
+    if (!isEditor) {
+      openUnlockModal();
+      return;
+    }
+
+    try {
+      setError(null);
+      const duration = Math.max(30, timeToMinutes(guest.endTime) - timeToMinutes(guest.time));
+
+      await updateGuest(guest.id, {
+        company: guest.company,
+        date,
+        endTime: addMinutesToTime(time, duration, SUMMIT_DAY_END_TIME),
+        name: guest.name,
+        notes: guest.notes,
+        status: guest.status,
+        time,
+      });
+    } catch (moveError) {
+      const message =
+        moveError instanceof Error ? moveError.message : "Unable to move this guest slot.";
+      setError(message);
+    }
+  };
+
   const handleSubmit = async (values: GuestFormValues) => {
     if (!isEditor) {
       openUnlockModal();
@@ -279,6 +307,7 @@ export default function Home() {
                   onAddGuestForDate={handleCreateForDate}
                   onDeleteGuest={handleDelete}
                   onEditGuest={handleEdit}
+                  onMoveGuest={handleMoveGuest}
                   onRequestUnlock={openUnlockModal}
                 />
               ) : (

@@ -165,7 +165,7 @@ export default function GuestsTab({
                       </div>
                     </td>
                     <td className="px-6 py-5">{guest.company}</td>
-                    <td className="px-6 py-5">{formatDateTimeLabel(guest.date, guest.time)}</td>
+                    <td className="px-6 py-5">{formatDateTimeLabel(guest.date, guest.time, guest.endTime)}</td>
                     <td className="px-6 py-5">
                       <StatusBadge status={guest.status} />
                     </td>
@@ -208,7 +208,9 @@ export default function GuestsTab({
                   </div>
                   <StatusBadge status={guest.status} />
                 </div>
-                <p className="mt-4 text-sm text-white/70">{formatDateTimeLabel(guest.date, guest.time)}</p>
+                <p className="mt-4 text-sm text-white/70">
+                  {formatDateTimeLabel(guest.date, guest.time, guest.endTime)}
+                </p>
                 {guest.notes ? (
                   <p className="mt-4 rounded-2xl bg-black/15 px-3 py-3 text-sm leading-6 text-white/70">
                     {guest.notes}

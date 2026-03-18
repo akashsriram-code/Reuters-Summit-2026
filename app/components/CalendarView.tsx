@@ -7,7 +7,7 @@ import EmptyState from "@/app/components/EmptyState";
 import LoadingSpinner from "@/app/components/LoadingSpinner";
 import StatusBadge from "@/app/components/StatusBadge";
 import { SUMMIT_DATES } from "@/lib/types";
-import { formatUpdatedAtLabel, getGuestsForDate } from "@/lib/utils";
+import { formatDateTimeLabel, formatUpdatedAtLabel, getGuestsForDate } from "@/lib/utils";
 import type { Guest } from "@/lib/types";
 
 type CalendarViewProps = {
@@ -18,10 +18,11 @@ type CalendarViewProps = {
   onAddGuestForDate: (date: string, time?: string) => void;
   onDeleteGuest: (guest: Guest) => Promise<void>;
   onEditGuest: (guest: Guest) => void;
+  onMoveGuest: (guest: Guest, date: string, time: string) => Promise<void>;
   onRequestUnlock: () => void;
 };
 
-const HOURS = Array.from({ length: 11 }, (_, index) => index + 9);
+const HOURS = Array.from({ length: 10 }, (_, index) => index + 9);
 
 function formatHourLabel(hour: number) {
   return format(new Date(2026, 4, 18, hour, 0, 0), "h a");
@@ -40,9 +41,11 @@ export default function CalendarView({
   onAddGuestForDate,
   onDeleteGuest,
   onEditGuest,
+  onMoveGuest,
   onRequestUnlock,
 }: CalendarViewProps) {
   const [selectedDate, setSelectedDate] = useState<string>(SUMMIT_DATES[0]);
+  const [draggingGuestId, setDraggingGuestId] = useState<string | null>(null);
 
   const guestsByDate = useMemo(() => {
     return Object.fromEntries(SUMMIT_DATES.map((date) => [date, getGuestsForDate(guests, date)]));
@@ -136,7 +139,7 @@ export default function CalendarView({
                             selectedDate === date
                               ? "bg-white/[0.05] hover:bg-white/[0.08]"
                               : "bg-transparent hover:bg-white/[0.04]"
-                          }`}
+                          } ${draggingGuestId ? "hover:border-reuters-red/30" : ""}`}
                           onClick={() => {
                             setSelectedDate(date);
                             if (canEdit) {
@@ -144,6 +147,30 @@ export default function CalendarView({
                             } else {
                               onRequestUnlock();
                             }
+                          }}
+                          onDragOver={(event) => {
+                            if (!canEdit) {
+                              return;
+                            }
+
+                            event.preventDefault();
+                          }}
+                          onDrop={(event) => {
+                            if (!canEdit) {
+                              onRequestUnlock();
+                              return;
+                            }
+
+                            event.preventDefault();
+                            setDraggingGuestId(null);
+                            const guestId = event.dataTransfer.getData("text/plain");
+                            const guest = guests.find((item) => item.id === guestId);
+
+                            if (!guest) {
+                              return;
+                            }
+
+                            void onMoveGuest(guest, date, slotTime);
                           }}
                           type="button"
                         >
@@ -160,11 +187,22 @@ export default function CalendarView({
                             {hourGuests.map((guest) => (
                               <div
                                 key={guest.id}
+                                draggable={canEdit}
                                 className={`rounded-2xl border px-3 py-2 shadow-lg shadow-black/10 ${
                                   guest.status === "confirmed"
                                     ? "border-emerald-300/25 bg-emerald-400/65 text-slate-950"
                                     : "border-amber-200/25 bg-amber-300/75 text-slate-950"
                                 }`}
+                                onDragEnd={() => setDraggingGuestId(null)}
+                                onDragStart={(event) => {
+                                  if (!canEdit) {
+                                    return;
+                                  }
+
+                                  setDraggingGuestId(guest.id);
+                                  event.dataTransfer.effectAllowed = "move";
+                                  event.dataTransfer.setData("text/plain", guest.id);
+                                }}
                                 onClick={(event) => event.stopPropagation()}
                               >
                                 <div className="flex items-start justify-between gap-2">
@@ -176,7 +214,7 @@ export default function CalendarView({
                                 </div>
                                 <div className="mt-2 flex items-center gap-2 text-xs opacity-80">
                                   <Clock3 className="h-3.5 w-3.5" />
-                                  <span>{format(new Date(`${guest.date}T${guest.time}:00`), "h:mm a")}</span>
+                                  <span>{formatDateTimeLabel(guest.date, guest.time, guest.endTime)}</span>
                                 </div>
                                 <div className="mt-3 flex items-center justify-end gap-2">
                                   <button

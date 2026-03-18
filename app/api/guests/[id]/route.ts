@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { FieldValue, getAdminDb } from "@/lib/firebaseAdmin";
 import { ensureEditorSession } from "@/lib/apiGuards";
+import { SUMMIT_DAY_END_TIME, SUMMIT_DAY_START_TIME } from "@/lib/types";
+import { isValidTimeRange, timeToMinutes } from "@/lib/utils";
 import type { GuestFormValues, GuestStatus } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -8,7 +10,7 @@ export const runtime = "nodejs";
 const allowedStatuses = new Set<GuestStatus>(["tentative", "confirmed"]);
 
 function validateGuest(values: GuestFormValues) {
-  if (!values.name.trim() || !values.company.trim() || !values.date || !values.time) {
+  if (!values.name.trim() || !values.company.trim() || !values.date || !values.time || !values.endTime) {
     return "Please complete all required fields before saving.";
   }
 
@@ -18,6 +20,17 @@ function validateGuest(values: GuestFormValues) {
 
   if (values.notes.length > 300) {
     return "Notes must be 300 characters or fewer.";
+  }
+
+  if (!isValidTimeRange(values.time, values.endTime)) {
+    return "End time must be later than the start time.";
+  }
+
+  if (
+    timeToMinutes(values.time) < timeToMinutes(SUMMIT_DAY_START_TIME) ||
+    timeToMinutes(values.endTime) > timeToMinutes(SUMMIT_DAY_END_TIME)
+  ) {
+    return "Slot times must stay within the summit day window.";
   }
 
   return null;

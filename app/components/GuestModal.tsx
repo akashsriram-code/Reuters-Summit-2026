@@ -3,8 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { format } from "date-fns";
 import { AlertTriangle, CalendarDays, Clock3, X } from "lucide-react";
-import { SUMMIT_END_DATE, SUMMIT_START_DATE } from "@/lib/types";
-import { formatUpdatedAtLabel, isAllowedSummitDate } from "@/lib/utils";
+import { SUMMIT_DAY_END_TIME, SUMMIT_DAY_START_TIME, SUMMIT_END_DATE, SUMMIT_START_DATE } from "@/lib/types";
+import { formatUpdatedAtLabel, getDefaultEndTime, isAllowedSummitDate, isValidTimeRange } from "@/lib/utils";
 import type { Guest, GuestFormValues, GuestStatus } from "@/lib/types";
 
 type GuestModalProps = {
@@ -22,10 +22,11 @@ type GuestModalProps = {
 const defaultValues: GuestFormValues = {
   company: "",
   date: SUMMIT_START_DATE,
+  endTime: "10:00",
   name: "",
   notes: "",
   status: "tentative",
-  time: "09:00",
+  time: SUMMIT_DAY_START_TIME,
 };
 
 export default function GuestModal({
@@ -51,6 +52,7 @@ export default function GuestModal({
       setFormValues({
         company: guest.company,
         date: guest.date,
+        endTime: guest.endTime,
         name: guest.name,
         notes: guest.notes,
         status: guest.status,
@@ -64,6 +66,7 @@ export default function GuestModal({
       ...defaultValues,
       date: defaultDate && isAllowedSummitDate(defaultDate) ? defaultDate : SUMMIT_START_DATE,
       time: defaultTime ?? defaultValues.time,
+      endTime: defaultTime ? getDefaultEndTime(defaultTime) : defaultValues.endTime,
     });
     setValidationError(null);
   }, [defaultDate, defaultTime, guest, isOpen]);
@@ -82,10 +85,23 @@ export default function GuestModal({
   }
 
   const handleFieldChange = <T extends keyof GuestFormValues>(field: T, value: GuestFormValues[T]) => {
-    setFormValues((current) => ({
-      ...current,
-      [field]: value,
-    }));
+    setFormValues((current) => {
+      if (field === "time") {
+        const nextTime = value as GuestFormValues["time"];
+        return {
+          ...current,
+          endTime: isValidTimeRange(nextTime, current.endTime)
+            ? current.endTime
+            : getDefaultEndTime(nextTime),
+          time: nextTime,
+        };
+      }
+
+      return {
+        ...current,
+        [field]: value,
+      };
+    });
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -94,13 +110,14 @@ export default function GuestModal({
     const normalized: GuestFormValues = {
       company: formValues.company.trim(),
       date: formValues.date,
+      endTime: formValues.endTime,
       name: formValues.name.trim(),
       notes: formValues.notes.trim(),
       status: formValues.status,
       time: formValues.time,
     };
 
-    if (!normalized.name || !normalized.company || !normalized.date || !normalized.time) {
+    if (!normalized.name || !normalized.company || !normalized.date || !normalized.time || !normalized.endTime) {
       setValidationError("Please complete all required fields before saving.");
       return;
     }
@@ -112,6 +129,11 @@ export default function GuestModal({
 
     if (normalized.notes.length > 300) {
       setValidationError("Notes must be 300 characters or fewer.");
+      return;
+    }
+
+    if (!isValidTimeRange(normalized.time, normalized.endTime)) {
+      setValidationError("End time must be later than the start time.");
       return;
     }
 
@@ -154,7 +176,7 @@ export default function GuestModal({
         ) : null}
 
         <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid gap-5 sm:grid-cols-3">
             <label className="space-y-2 sm:col-span-2">
               <span className="text-sm font-medium text-reuters-ink">
                 Guest Full Name <span className="text-reuters-red">*</span>
@@ -203,16 +225,36 @@ export default function GuestModal({
 
             <label className="space-y-2">
               <span className="text-sm font-medium text-reuters-ink">
-                Time <span className="text-reuters-red">*</span>
+                Start Time <span className="text-reuters-red">*</span>
               </span>
               <div className="relative">
                 <Clock3 className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-reuters-stone" />
                 <input
                   className="field-input pl-11"
+                  max={SUMMIT_DAY_END_TIME}
+                  min={SUMMIT_DAY_START_TIME}
                   onChange={(event) => handleFieldChange("time", event.target.value)}
                   required
                   type="time"
                   value={formValues.time}
+                />
+              </div>
+            </label>
+
+            <label className="space-y-2">
+              <span className="text-sm font-medium text-reuters-ink">
+                End Time <span className="text-reuters-red">*</span>
+              </span>
+              <div className="relative">
+                <Clock3 className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-reuters-stone" />
+                <input
+                  className="field-input pl-11"
+                  max={SUMMIT_DAY_END_TIME}
+                  min={SUMMIT_DAY_START_TIME}
+                  onChange={(event) => handleFieldChange("endTime", event.target.value)}
+                  required
+                  type="time"
+                  value={formValues.endTime}
                 />
               </div>
             </label>
