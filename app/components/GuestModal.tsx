@@ -123,7 +123,7 @@ export default function GuestModal({
     }
 
     if (!isAllowedSummitDate(normalized.date)) {
-      setValidationError("Guest slots can only be scheduled between May 18 and May 23, 2026.");
+      setValidationError("Guest slots can only be scheduled between May 18 and May 25, 2026.");
       return;
     }
 

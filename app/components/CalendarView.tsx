@@ -31,6 +31,7 @@ const HOURS = Array.from({ length: 10 }, (_, index) => index + 9);
 const ROW_HEIGHT = 96;
 const DAY_START_MINUTES = timeToMinutes(SUMMIT_DAY_START_TIME);
 const DAY_END_MINUTES = timeToMinutes(SUMMIT_DAY_END_TIME);
+const CALENDAR_GRID_TEMPLATE = `84px repeat(${SUMMIT_DATES.length}, minmax(170px, 1fr))`;
 
 function formatHourLabel(hour: number) {
   return format(new Date(2026, 4, 18, hour, 0, 0), "h a");
@@ -74,7 +75,7 @@ export default function CalendarView({
         <div className="flex flex-col gap-4 rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm uppercase tracking-[0.28em] text-white/45">Summit schedule</p>
-            <h3 className="mt-1 text-2xl font-semibold text-white">May 18-23, 2026</h3>
+            <h3 className="mt-1 text-2xl font-semibold text-white">May 18-25, 2026</h3>
             <p className="mt-2 text-sm text-white/55">
               Click any hour block to add a slot. Drag a guest card to move it in the schedule.
             </p>
@@ -102,8 +103,8 @@ export default function CalendarView({
         ) : (
           <div className="card-surface overflow-hidden p-0">
             <div className="overflow-x-auto">
-              <div className="min-w-[1120px]">
-                <div className="grid grid-cols-[84px_repeat(6,minmax(170px,1fr))]">
+              <div className="min-w-max">
+                <div className="grid" style={{ gridTemplateColumns: CALENDAR_GRID_TEMPLATE }}>
                   <div className="border-b border-white/10 bg-[#131D31]" />
                   {SUMMIT_DATES.map((date) => {
                     const dayDate = new Date(`${date}T00:00:00`);
@@ -137,7 +138,7 @@ export default function CalendarView({
                   })}
                 </div>
 
-                <div className="grid grid-cols-[84px_repeat(6,minmax(170px,1fr))]">
+                <div className="grid" style={{ gridTemplateColumns: CALENDAR_GRID_TEMPLATE }}>
                   <div className="bg-[#10192B]">
                     {HOURS.map((hour) => (
                       <div

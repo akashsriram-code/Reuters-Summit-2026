@@ -29,7 +29,7 @@ export type EditorSessionState = {
 };
 
 export const SUMMIT_START_DATE = "2026-05-18";
-export const SUMMIT_END_DATE = "2026-05-23";
+export const SUMMIT_END_DATE = "2026-05-25";
 export const SUMMIT_DAY_START_TIME = "09:00";
 export const SUMMIT_DAY_END_TIME = "19:00";
 
@@ -40,4 +40,6 @@ export const SUMMIT_DATES = [
   "2026-05-21",
   "2026-05-22",
   "2026-05-23",
+  "2026-05-24",
+  "2026-05-25",
 ] as const;
