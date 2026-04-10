@@ -104,200 +104,199 @@ export default function CalendarView({
           <div className="card-surface overflow-hidden p-0">
             <div className="w-full">
               <div className="grid w-full" style={{ gridTemplateColumns: CALENDAR_GRID_TEMPLATE }}>
-                  <div className="border-b border-white/10 bg-[#131D31]" />
-                  {SUMMIT_DATES.map((date) => {
-                    const dayDate = new Date(`${date}T00:00:00`);
-                    const active = selectedDate === date;
+                <div className="border-b border-white/10 bg-[#131D31]" />
+                {SUMMIT_DATES.map((date) => {
+                  const dayDate = new Date(`${date}T00:00:00`);
+                  const active = selectedDate === date;
 
-                    return (
-                      <button
-                        key={date}
-                        className={`border-b border-l border-white/10 px-3 py-4 text-left transition ${
-                          active ? "bg-white/[0.08]" : "bg-[#131D31] hover:bg-white/[0.05]"
-                        }`}
-                        onClick={() => setSelectedDate(date)}
-                        type="button"
-                      >
-                        <div className="text-[11px] uppercase tracking-[0.26em] text-white/45">
-                          {format(dayDate, "EEE")}
+                  return (
+                    <button
+                      key={date}
+                      className={`border-b border-l border-white/10 px-3 py-4 text-left transition ${
+                        active ? "bg-white/[0.08]" : "bg-[#131D31] hover:bg-white/[0.05]"
+                      }`}
+                      onClick={() => setSelectedDate(date)}
+                      type="button"
+                    >
+                      <div className="text-[11px] uppercase tracking-[0.26em] text-white/45">
+                        {format(dayDate, "EEE")}
+                      </div>
+                      <div className="mt-2 flex items-center gap-2">
+                        <span className="text-xl font-semibold text-white xl:text-2xl">{format(dayDate, "d")}</span>
+                        <div>
+                          <div className="text-sm font-medium text-white">{format(dayDate, "MMM")}</div>
+                          {isToday(dayDate) ? (
+                            <div className="text-xs text-reuters-red">Today</div>
+                          ) : (
+                            <div className="text-xs text-white/45">{guestsByDate[date]?.length ?? 0} slots</div>
+                          )}
                         </div>
-                        <div className="mt-2 flex items-center gap-2">
-                          <span className="text-xl font-semibold text-white xl:text-2xl">{format(dayDate, "d")}</span>
-                          <div>
-                            <div className="text-sm font-medium text-white">{format(dayDate, "MMM")}</div>
-                            {isToday(dayDate) ? (
-                              <div className="text-xs text-reuters-red">Today</div>
-                            ) : (
-                              <div className="text-xs text-white/45">{guestsByDate[date]?.length ?? 0} slots</div>
-                            )}
-                          </div>
-                        </div>
-                      </button>
-                    );
-                  })}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
 
               <div className="grid w-full" style={{ gridTemplateColumns: CALENDAR_GRID_TEMPLATE }}>
-                  <div className="bg-[#10192B]">
-                    {HOURS.map((hour) => (
-                      <div
-                        key={hour}
-                        className="flex h-24 items-start justify-end border-b border-white/10 px-3 py-4 text-[11px] font-medium uppercase tracking-[0.16em] text-white/40"
-                      >
-                        {formatHourLabel(hour)}
-                      </div>
-                    ))}
-                  </div>
-
-                  {SUMMIT_DATES.map((date) => (
+                <div className="bg-[#10192B]">
+                  {HOURS.map((hour) => (
                     <div
-                      key={date}
-                      className={`relative border-l border-white/10 ${
-                        selectedDate === date ? "bg-white/[0.03]" : "bg-transparent"
-                      }`}
-                      style={{ height: `${HOURS.length * ROW_HEIGHT}px` }}
+                      key={hour}
+                      className="flex h-24 items-start justify-end border-b border-white/10 px-3 py-4 text-[11px] font-medium uppercase tracking-[0.16em] text-white/40"
                     >
-                      {HOURS.map((hour) => {
-                        const slotTime = `${hour.toString().padStart(2, "0")}:00`;
-
-                        return (
-                          <button
-                            key={`${date}-${slotTime}`}
-                            className={`absolute inset-x-0 border-b border-white/10 px-2 py-2 text-left transition ${
-                              draggingGuestId ? "hover:bg-reuters-red/8" : "hover:bg-white/[0.04]"
-                            }`}
-                            onClick={() => {
-                              setSelectedDate(date);
-                              if (canEdit) {
-                                onAddGuestForDate(date, slotTime);
-                              } else {
-                                onRequestUnlock();
-                              }
-                            }}
-                            onDragOver={(event) => {
-                              if (!canEdit) {
-                                return;
-                              }
-
-                              event.preventDefault();
-                            }}
-                            onDrop={(event) => {
-                              if (!canEdit) {
-                                onRequestUnlock();
-                                return;
-                              }
-
-                              event.preventDefault();
-                              setDraggingGuestId(null);
-                              const guestId = event.dataTransfer.getData("text/plain");
-                              const guest = guests.find((item) => item.id === guestId);
-
-                              if (!guest) {
-                                return;
-                              }
-
-                              void onMoveGuest(guest, date, slotTime);
-                            }}
-                            style={{
-                              height: `${ROW_HEIGHT}px`,
-                              top: `${(hour - HOURS[0]) * ROW_HEIGHT}px`,
-                            }}
-                            type="button"
-                          >
-                            <div className="pointer-events-none flex items-center justify-between">
-                              <span className="text-[10px] uppercase tracking-[0.22em] text-white/20">
-                                {slotTime}
-                              </span>
-                              <span className="rounded-full border border-white/10 bg-white/[0.04] p-1 text-white/35">
-                                <Plus className="h-3 w-3" />
-                              </span>
-                            </div>
-                          </button>
-                        );
-                      })}
-
-                      {(guestsByDate[date] ?? []).map((guest) => {
-                        const position = getEventPosition(guest);
-
-                        return (
-                          <div
-                            key={guest.id}
-                            draggable={canEdit}
-                            className={`absolute left-1.5 right-1.5 z-10 rounded-2xl border px-2.5 py-2 shadow-lg shadow-black/10 ${
-                              guest.status === "confirmed"
-                                ? "border-emerald-300/25 bg-emerald-400/65 text-slate-950"
-                                : "border-amber-200/25 bg-amber-300/75 text-slate-950"
-                            }`}
-                            onClick={(event) => event.stopPropagation()}
-                            onDragEnd={() => setDraggingGuestId(null)}
-                            onDragStart={(event) => {
-                              if (!canEdit) {
-                                return;
-                              }
-
-                              setDraggingGuestId(guest.id);
-                              event.dataTransfer.effectAllowed = "move";
-                              event.dataTransfer.setData("text/plain", guest.id);
-                            }}
-                            style={{
-                              height: `${position.height - 8}px`,
-                              top: `${position.top + 4}px`,
-                            }}
-                          >
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="min-w-0">
-                                <p className="truncate text-sm font-semibold">{guest.name}</p>
-                                <p className="truncate text-xs opacity-75">{guest.company}</p>
-                              </div>
-                              <StatusBadge status={guest.status} />
-                            </div>
-                            <div className="mt-2 flex items-center gap-2 text-xs opacity-80">
-                              <Clock3 className="h-3.5 w-3.5" />
-                              <span>{formatDateTimeLabel(guest.date, guest.time, guest.endTime)}</span>
-                            </div>
-                            <div className="mt-3 flex items-center justify-end gap-2">
-                              <button
-                                aria-label={`Edit ${guest.name}`}
-                                className="rounded-full border border-black/10 bg-black/5 p-1.5 text-slate-900 transition hover:bg-black/10 disabled:cursor-not-allowed disabled:opacity-40"
-                                disabled={!canEdit}
-                                onClick={(event) => {
-                                  event.stopPropagation();
-                                  if (canEdit) {
-                                    onEditGuest(guest);
-                                  } else {
-                                    onRequestUnlock();
-                                  }
-                                }}
-                                type="button"
-                              >
-                                <PencilLine className="h-3.5 w-3.5" />
-                              </button>
-                              <button
-                                aria-label={`Delete ${guest.name}`}
-                                className="rounded-full border border-black/10 bg-black/5 p-1.5 text-slate-900 transition hover:bg-black/10 disabled:cursor-not-allowed disabled:opacity-40"
-                                disabled={!canEdit}
-                                onClick={(event) => {
-                                  event.stopPropagation();
-                                  if (canEdit) {
-                                    void onDeleteGuest(guest);
-                                  } else {
-                                    onRequestUnlock();
-                                  }
-                                }}
-                                type="button"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </button>
-                            </div>
-                            <div className="mt-2 text-[10px] uppercase tracking-[0.18em] opacity-60">
-                              Updated {formatUpdatedAtLabel(guest.updatedAt)}
-                            </div>
-                          </div>
-                        );
-                      })}
+                      {formatHourLabel(hour)}
                     </div>
                   ))}
                 </div>
+
+                {SUMMIT_DATES.map((date) => (
+                  <div
+                    key={date}
+                    className={`relative border-l border-white/10 ${
+                      selectedDate === date ? "bg-white/[0.03]" : "bg-transparent"
+                    }`}
+                    style={{ height: `${HOURS.length * ROW_HEIGHT}px` }}
+                  >
+                    {HOURS.map((hour) => {
+                      const slotTime = `${hour.toString().padStart(2, "0")}:00`;
+
+                      return (
+                        <button
+                          key={`${date}-${slotTime}`}
+                          className={`absolute inset-x-0 border-b border-white/10 px-2 py-2 text-left transition ${
+                            draggingGuestId ? "hover:bg-reuters-red/8" : "hover:bg-white/[0.04]"
+                          }`}
+                          onClick={() => {
+                            setSelectedDate(date);
+                            if (canEdit) {
+                              onAddGuestForDate(date, slotTime);
+                            } else {
+                              onRequestUnlock();
+                            }
+                          }}
+                          onDragOver={(event) => {
+                            if (!canEdit) {
+                              return;
+                            }
+
+                            event.preventDefault();
+                          }}
+                          onDrop={(event) => {
+                            if (!canEdit) {
+                              onRequestUnlock();
+                              return;
+                            }
+
+                            event.preventDefault();
+                            setDraggingGuestId(null);
+                            const guestId = event.dataTransfer.getData("text/plain");
+                            const guest = guests.find((item) => item.id === guestId);
+
+                            if (!guest) {
+                              return;
+                            }
+
+                            void onMoveGuest(guest, date, slotTime);
+                          }}
+                          style={{
+                            height: `${ROW_HEIGHT}px`,
+                            top: `${(hour - HOURS[0]) * ROW_HEIGHT}px`,
+                          }}
+                          type="button"
+                        >
+                          <div className="pointer-events-none flex items-center justify-between">
+                            <span className="text-[10px] uppercase tracking-[0.22em] text-white/20">
+                              {slotTime}
+                            </span>
+                            <span className="rounded-full border border-white/10 bg-white/[0.04] p-1 text-white/35">
+                              <Plus className="h-3 w-3" />
+                            </span>
+                          </div>
+                        </button>
+                      );
+                    })}
+
+                    {(guestsByDate[date] ?? []).map((guest) => {
+                      const position = getEventPosition(guest);
+
+                      return (
+                        <div
+                          key={guest.id}
+                          draggable={canEdit}
+                          className={`absolute left-1.5 right-1.5 z-10 rounded-2xl border px-2.5 py-2 shadow-lg shadow-black/10 ${
+                            guest.status === "confirmed"
+                              ? "border-emerald-300/25 bg-emerald-400/65 text-slate-950"
+                              : "border-amber-200/25 bg-amber-300/75 text-slate-950"
+                          }`}
+                          onClick={(event) => event.stopPropagation()}
+                          onDragEnd={() => setDraggingGuestId(null)}
+                          onDragStart={(event) => {
+                            if (!canEdit) {
+                              return;
+                            }
+
+                            setDraggingGuestId(guest.id);
+                            event.dataTransfer.effectAllowed = "move";
+                            event.dataTransfer.setData("text/plain", guest.id);
+                          }}
+                          style={{
+                            height: `${position.height - 8}px`,
+                            top: `${position.top + 4}px`,
+                          }}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-semibold">{guest.name}</p>
+                              <p className="truncate text-xs opacity-75">{guest.company}</p>
+                            </div>
+                            <StatusBadge status={guest.status} />
+                          </div>
+                          <div className="mt-2 flex items-center gap-2 text-xs opacity-80">
+                            <Clock3 className="h-3.5 w-3.5" />
+                            <span>{formatDateTimeLabel(guest.date, guest.time, guest.endTime)}</span>
+                          </div>
+                          <div className="mt-3 flex items-center justify-end gap-2">
+                            <button
+                              aria-label={`Edit ${guest.name}`}
+                              className="rounded-full border border-black/10 bg-black/5 p-1.5 text-slate-900 transition hover:bg-black/10 disabled:cursor-not-allowed disabled:opacity-40"
+                              disabled={!canEdit}
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                if (canEdit) {
+                                  onEditGuest(guest);
+                                } else {
+                                  onRequestUnlock();
+                                }
+                              }}
+                              type="button"
+                            >
+                              <PencilLine className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              aria-label={`Delete ${guest.name}`}
+                              className="rounded-full border border-black/10 bg-black/5 p-1.5 text-slate-900 transition hover:bg-black/10 disabled:cursor-not-allowed disabled:opacity-40"
+                              disabled={!canEdit}
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                if (canEdit) {
+                                  void onDeleteGuest(guest);
+                                } else {
+                                  onRequestUnlock();
+                                }
+                              }}
+                              type="button"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                          <div className="mt-2 text-[10px] uppercase tracking-[0.18em] opacity-60">
+                            Updated {formatUpdatedAtLabel(guest.updatedAt)}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
               </div>
             </div>
           </div>
