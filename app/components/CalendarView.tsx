@@ -31,7 +31,7 @@ const HOURS = Array.from({ length: 10 }, (_, index) => index + 9);
 const ROW_HEIGHT = 96;
 const DAY_START_MINUTES = timeToMinutes(SUMMIT_DAY_START_TIME);
 const DAY_END_MINUTES = timeToMinutes(SUMMIT_DAY_END_TIME);
-const CALENDAR_GRID_TEMPLATE = `84px repeat(${SUMMIT_DATES.length}, minmax(170px, 1fr))`;
+const CALENDAR_GRID_TEMPLATE = `72px repeat(${SUMMIT_DATES.length}, minmax(0, 1fr))`;
 
 function formatHourLabel(hour: number) {
   return format(new Date(2026, 4, 18, hour, 0, 0), "h a");
@@ -102,9 +102,8 @@ export default function CalendarView({
           </div>
         ) : (
           <div className="card-surface overflow-hidden p-0">
-            <div className="overflow-x-auto">
-              <div className="min-w-max">
-                <div className="grid" style={{ gridTemplateColumns: CALENDAR_GRID_TEMPLATE }}>
+            <div className="w-full">
+              <div className="grid w-full" style={{ gridTemplateColumns: CALENDAR_GRID_TEMPLATE }}>
                   <div className="border-b border-white/10 bg-[#131D31]" />
                   {SUMMIT_DATES.map((date) => {
                     const dayDate = new Date(`${date}T00:00:00`);
@@ -113,7 +112,7 @@ export default function CalendarView({
                     return (
                       <button
                         key={date}
-                        className={`border-b border-l border-white/10 px-4 py-4 text-left transition ${
+                        className={`border-b border-l border-white/10 px-3 py-4 text-left transition ${
                           active ? "bg-white/[0.08]" : "bg-[#131D31] hover:bg-white/[0.05]"
                         }`}
                         onClick={() => setSelectedDate(date)}
@@ -122,8 +121,8 @@ export default function CalendarView({
                         <div className="text-[11px] uppercase tracking-[0.26em] text-white/45">
                           {format(dayDate, "EEE")}
                         </div>
-                        <div className="mt-2 flex items-center gap-3">
-                          <span className="text-2xl font-semibold text-white">{format(dayDate, "d")}</span>
+                        <div className="mt-2 flex items-center gap-2">
+                          <span className="text-xl font-semibold text-white xl:text-2xl">{format(dayDate, "d")}</span>
                           <div>
                             <div className="text-sm font-medium text-white">{format(dayDate, "MMM")}</div>
                             {isToday(dayDate) ? (
@@ -136,14 +135,14 @@ export default function CalendarView({
                       </button>
                     );
                   })}
-                </div>
+              </div>
 
-                <div className="grid" style={{ gridTemplateColumns: CALENDAR_GRID_TEMPLATE }}>
+              <div className="grid w-full" style={{ gridTemplateColumns: CALENDAR_GRID_TEMPLATE }}>
                   <div className="bg-[#10192B]">
                     {HOURS.map((hour) => (
                       <div
                         key={hour}
-                        className="flex h-24 items-start justify-end border-b border-white/10 px-4 py-4 text-xs font-medium uppercase tracking-[0.18em] text-white/40"
+                        className="flex h-24 items-start justify-end border-b border-white/10 px-3 py-4 text-[11px] font-medium uppercase tracking-[0.16em] text-white/40"
                       >
                         {formatHourLabel(hour)}
                       </div>
@@ -164,7 +163,7 @@ export default function CalendarView({
                         return (
                           <button
                             key={`${date}-${slotTime}`}
-                            className={`absolute inset-x-0 border-b border-white/10 px-3 py-2 text-left transition ${
+                            className={`absolute inset-x-0 border-b border-white/10 px-2 py-2 text-left transition ${
                               draggingGuestId ? "hover:bg-reuters-red/8" : "hover:bg-white/[0.04]"
                             }`}
                             onClick={() => {
@@ -224,7 +223,7 @@ export default function CalendarView({
                           <div
                             key={guest.id}
                             draggable={canEdit}
-                            className={`absolute left-2 right-2 z-10 rounded-2xl border px-3 py-2 shadow-lg shadow-black/10 ${
+                            className={`absolute left-1.5 right-1.5 z-10 rounded-2xl border px-2.5 py-2 shadow-lg shadow-black/10 ${
                               guest.status === "confirmed"
                                 ? "border-emerald-300/25 bg-emerald-400/65 text-slate-950"
                                 : "border-amber-200/25 bg-amber-300/75 text-slate-950"

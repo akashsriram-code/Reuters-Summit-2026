@@ -263,7 +263,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-reuters-navy text-white">
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_right,_rgba(255,107,53,0.28),_transparent_25%),radial-gradient(circle_at_bottom_left,_rgba(72,200,167,0.16),_transparent_25%),linear-gradient(180deg,_#10203A_0%,_#0A1628_55%,_#08111F_100%)]" />
-      <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-5 sm:px-6 lg:px-8">
+      <div className="mx-auto flex min-h-screen w-full max-w-[1600px] flex-col px-4 py-5 sm:px-5 lg:px-6 xl:px-8">
         <Header
           activeTab={activeTab}
           counts={counts}
